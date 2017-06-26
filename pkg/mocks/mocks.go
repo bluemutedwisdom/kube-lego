@@ -9,7 +9,7 @@ import (
 
 	logrus "github.com/Sirupsen/logrus"
 	gomock "github.com/golang/mock/gomock"
-	. "github.com/jetstack/kube-lego/pkg/kubelego_const"
+	. "github.com/Shopify/kube-lego/pkg/kubelego_const"
 	intstr "k8s.io/apimachinery/pkg/util/intstr"
 	kubernetes "k8s.io/client-go/kubernetes"
 	v1 "k8s.io/client-go/pkg/api/v1"
