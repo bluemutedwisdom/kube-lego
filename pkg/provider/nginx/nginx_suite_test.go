@@ -3,8 +3,8 @@ package nginx
 import (
 	"testing"
 
-	"github.com/jetstack/kube-lego/pkg/kubelego_const"
-	"github.com/jetstack/kube-lego/pkg/mocks"
+	"github.com/Shopify/kube-lego/pkg/kubelego_const"
+	"github.com/Shopify/kube-lego/pkg/mocks"
 
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"

@@ -12,12 +12,12 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/jetstack/kube-lego/pkg/acme"
-	"github.com/jetstack/kube-lego/pkg/ingress"
-	"github.com/jetstack/kube-lego/pkg/kubelego_const"
-	"github.com/jetstack/kube-lego/pkg/provider/gce"
-	"github.com/jetstack/kube-lego/pkg/provider/nginx"
-	"github.com/jetstack/kube-lego/pkg/secret"
+	"github.com/Shopify/kube-lego/pkg/acme"
+	"github.com/Shopify/kube-lego/pkg/ingress"
+	"github.com/Shopify/kube-lego/pkg/kubelego_const"
+	"github.com/Shopify/kube-lego/pkg/provider/gce"
+	"github.com/Shopify/kube-lego/pkg/provider/nginx"
+	"github.com/Shopify/kube-lego/pkg/secret"
 
 	log "github.com/Sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -28,6 +28,12 @@ import (
 var _ kubelego.KubeLego = &KubeLego{}
 
 func makeLog() *log.Entry {
+	logtype := strings.ToLower(os.Getenv("LEGO_LOG_TYPE"))
+
+	if logtype == "json" {
+		log.SetFormatter(&log.JSONFormatter{})
+	}
+
 	loglevel := strings.ToLower(os.Getenv("LEGO_LOG_LEVEL"))
 	if len(loglevel) == 0 {
 		log.SetLevel(log.InfoLevel)
