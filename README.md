@@ -106,6 +106,7 @@ Please note:
 | `LEGO_SERVICE_NAME_NGINX` | n | `kube-lego-nginx` | Service name for NGINX ingress |
 | `LEGO_SERVICE_NAME_GCE` | n | `kube-lego-gce` | Service name for GCE ingress |
 | `LEGO_SUPPORTED_INGRESS_CLASS` | n | `nginx,gce` | Specify the supported ingress class |
+| `LEGO_SUPPORTED_INGRESS_PROVIDER` | n | `nginx,gce` | Specify the supported ingress provider |
 | `LEGO_INGRESS_NAME_NGINX` | n | `kube-lego-nginx` | Ingress name which contains the routing for HTTP verification for nginx ingress |
 | `LEGO_PORT` | n | `8080` | Port where this daemon is listening for verifcation calls (HTTP method)|
 | `LEGO_CHECK_INTERVAL` | n | `8h` | Interval for periodically certificate checks (to find expired certs)|
@@ -113,7 +114,7 @@ Please note:
 | `LEGO_DEFAULT_INGRESS_CLASS` | n | `nginx` | Default ingress class for resources without specification|
 | `LEGO_KUBE_API_URL` | n | `http://127.0.0.1:8080` | API server URL |
 | `LEGO_LOG_LEVEL` | n | `info` | Set log level (`debug`, `info`, `warn` or `error`) |
-| `LEGO_LOG_TYPE` | n | `-` | Set log type. Only `json` as custom value supported, everything else defaults to default logrus textFormat |
+| `LEGO_LOG_TYPE` | n | `text` | Set log type (`text`, `json`) |
 | `LEGO_KUBE_ANNOTATION` | n | `kubernetes.io/tls-acme` | Set the ingress annotation used by this instance of kube-lego to get certificate for from Let's Encrypt. Allows you to run kube-lego against staging and production LE |
 | `LEGO_WATCH_NAMESPACE` | n | `` | Namespace that kube-lego should watch for ingresses and services |
 

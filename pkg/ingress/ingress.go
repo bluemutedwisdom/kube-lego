@@ -23,6 +23,16 @@ func IsSupportedIngressClass(supportedClass []string, in string) (out string, er
 	return "", fmt.Errorf("unsupported ingress class '%s'. Did you you forget to specify LEGO_DEFAULT_INGRESS_CLASS ?", in)
 }
 
+func IsSupportedIngressProvider(supportedProviders []string, in string) (out string, err error) {
+	out = strings.ToLower(in)
+	for _, supportedProvider := range supportedProviders {
+		if supportedProvider == out {
+			return out, nil
+		}
+	}
+	return "", fmt.Errorf("unsupported ingress provider '%s'. Did you you forget to specify LEGO_DEFAULT_INGRESS_PROVIDER ?", in)
+}
+
 func IgnoreIngress(ing *k8sExtensions.Ingress) error {
 
 	key := kubelego.AnnotationEnabled
@@ -158,6 +168,16 @@ func (i *Ingress) IngressClass() string {
 	val, ok := i.IngressApi.Annotations[kubelego.AnnotationIngressClass]
 	if !ok {
 		return i.kubelego.LegoDefaultIngressClass()
+	}
+	return strings.ToLower(val)
+}
+
+func (i *Ingress) IngressProvider() string {
+	val, ok := i.IngressApi.Annotations[kubelego.AnnotationIngressProvider]
+	if !ok {
+		// we return IngressClass() here in order to not break backwards
+		// compatibility with older versions of kube-lego
+		return i.IngressClass()
 	}
 	return strings.ToLower(val)
 }

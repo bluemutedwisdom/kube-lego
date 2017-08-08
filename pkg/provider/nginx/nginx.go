@@ -5,9 +5,10 @@ import (
 	"github.com/Shopify/kube-lego/pkg/kubelego_const"
 	"github.com/Shopify/kube-lego/pkg/service"
 
+	"sort"
+
 	"github.com/Sirupsen/logrus"
 	k8sExtensions "k8s.io/client-go/pkg/apis/extensions/v1beta1"
-	"sort"
 )
 
 var _ kubelego.IngressProvider = &Nginx{}
@@ -119,8 +120,11 @@ func (p *Nginx) updateIngress() error {
 	ing.Annotations = map[string]string{
 		kubelego.AnnotationIngressChallengeEndpoints: "true",
 		kubelego.AnnotationSslRedirect:               "false",
-		kubelego.AnnotationIngressClass:              p.kubelego.LegoDefaultIngressClass(),
-		kubelego.AnnotationWhitelistSourceRange:      "0.0.0.0/0",
+		// TODO: use the ingres class as specified on the ingress we are
+		// requesting a certificate for
+		kubelego.AnnotationIngressClass:         p.kubelego.LegoDefaultIngressClass(),
+		kubelego.AnnotationIngressProvider:      "nginx",
+		kubelego.AnnotationWhitelistSourceRange: "0.0.0.0/0",
 	}
 
 	ing.Spec = k8sExtensions.IngressSpec{

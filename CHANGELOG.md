@@ -2,6 +2,17 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.1.5] - 2017-07-03
+
+### Fixed
+
+- Fix infinite update loop on ingress changes [#204](https://github.com/jetstack/kube-lego/pull/204)
+- Fix error message wording [#209](https://github.com/jetstack/kube-lego/pull/209)
+- Fix documentation wording [#208](https://github.com/jetstack/kube-lego/pull/208)
+
+### Added
+
+- Whitelist ingress IP source range (allow 0.0.0.0/0) [#114](https://github.com/jetstack/kube-lego/pull/114)
 
 ## [0.1.4] - 2017-05-12
 

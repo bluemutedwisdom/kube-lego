@@ -18,9 +18,11 @@ const TLSCaKey = "ca.crt"
 const AnnotationIngressChallengeEndpoints = "kubernetes.io/tls-acme-challenge-endpoints"
 const AnnotationIngressChallengeEndpointsHash = "kubernetes.io/tls-acme-challenge-endpoints-hash"
 const AnnotationIngressClass = "kubernetes.io/ingress.class"
+const AnnotationIngressProvider = "kubernetes.io/ingress.provider"
 const AnnotationSslRedirect = "ingress.kubernetes.io/ssl-redirect"
 const AnnotationKubeLegoManaged = "kubernetes.io/kube-lego-managed"
 const AnnotationWhitelistSourceRange = "ingress.kubernetes.io/whitelist-source-range"
 
 var SupportedIngressClasses = []string{"nginx", "gce"}
+var SupportedIngressProviders = []string{"nginx", "gce"}
 var AnnotationEnabled = "kubernetes.io/tls-acme"

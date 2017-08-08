@@ -4,6 +4,9 @@
 package mocks
 
 import (
+	net "net"
+	time "time"
+
 	logrus "github.com/Sirupsen/logrus"
 	gomock "github.com/golang/mock/gomock"
 	. "github.com/Shopify/kube-lego/pkg/kubelego_const"
@@ -11,8 +14,6 @@ import (
 	kubernetes "k8s.io/client-go/kubernetes"
 	v1 "k8s.io/client-go/pkg/api/v1"
 	v1beta1 "k8s.io/client-go/pkg/apis/extensions/v1beta1"
-	net "net"
-	time "time"
 )
 
 // Mock of KubeLego interface
@@ -156,6 +157,16 @@ func (_mr *_MockKubeLegoRecorder) LegoDefaultIngressClass() *gomock.Call {
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "LegoDefaultIngressClass")
 }
 
+func (_m *MockKubeLego) LegoDefaultIngressProvider() string {
+	ret := _m.ctrl.Call(_m, "LegoDefaultIngressProvider")
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+func (_mr *_MockKubeLegoRecorder) LegoDefaultIngressProvider() *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "LegoDefaultIngressProvider")
+}
+
 func (_m *MockKubeLego) LegoSupportedIngressClass() []string {
 	ret := _m.ctrl.Call(_m, "LegoSupportedIngressClass")
 	ret0, _ := ret[0].([]string)
@@ -164,6 +175,16 @@ func (_m *MockKubeLego) LegoSupportedIngressClass() []string {
 
 func (_mr *_MockKubeLegoRecorder) LegoSupportedIngressClass() *gomock.Call {
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "LegoSupportedIngressClass")
+}
+
+func (_m *MockKubeLego) LegoSupportedIngressProvider() []string {
+	ret := _m.ctrl.Call(_m, "LegoSupportedIngressProvider")
+	ret0, _ := ret[0].([]string)
+	return ret0
+}
+
+func (_mr *_MockKubeLegoRecorder) LegoSupportedIngressProvider() *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "LegoSupportedIngressProvider")
 }
 
 func (_m *MockKubeLego) LegoCheckInterval() time.Duration {
@@ -572,6 +593,16 @@ func (_m *MockIngress) IngressClass() string {
 
 func (_mr *_MockIngressRecorder) IngressClass() *gomock.Call {
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "IngressClass")
+}
+
+func (_m *MockIngress) IngressProvider() string {
+	ret := _m.ctrl.Call(_m, "IngressProvider")
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+func (_mr *_MockIngressRecorder) IngressProvider() *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "IngressProvider")
 }
 
 func (_m *MockIngress) Tls() []Tls {

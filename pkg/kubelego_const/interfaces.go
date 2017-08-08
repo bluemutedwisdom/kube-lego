@@ -25,6 +25,7 @@ type KubeLego interface {
 	LegoServiceNameGce() string
 	LegoDefaultIngressClass() string
 	LegoSupportedIngressClass() []string
+	LegoSupportedIngressProvider() []string
 	LegoCheckInterval() time.Duration
 	LegoMinimumValidity() time.Duration
 	LegoPodIP() net.IP
@@ -70,6 +71,7 @@ type Ingress interface {
 	Save() error
 	Delete() error
 	IngressClass() string
+	IngressProvider() string
 	Tls() []Tls
 	Ignore() bool
 }

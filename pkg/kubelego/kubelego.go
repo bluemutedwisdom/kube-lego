@@ -14,7 +14,7 @@ import (
 
 	"github.com/Shopify/kube-lego/pkg/acme"
 	"github.com/Shopify/kube-lego/pkg/ingress"
-	"github.com/Shopify/kube-lego/pkg/kubelego_const"
+	kubelego "github.com/Shopify/kube-lego/pkg/kubelego_const"
 	"github.com/Shopify/kube-lego/pkg/provider/gce"
 	"github.com/Shopify/kube-lego/pkg/provider/nginx"
 	"github.com/Shopify/kube-lego/pkg/secret"
@@ -29,9 +29,17 @@ var _ kubelego.KubeLego = &KubeLego{}
 
 func makeLog() *log.Entry {
 	logtype := strings.ToLower(os.Getenv("LEGO_LOG_TYPE"))
+	if logtype == "" {
+		logtype = "text"
+	}
 
 	if logtype == "json" {
 		log.SetFormatter(&log.JSONFormatter{})
+	} else if logtype == "text" {
+		log.SetFormatter(&log.TextFormatter{})
+	} else {
+		log.WithField("logtype", logtype).Fatal("Given logtype was not valid, check LEGO_LOG_TYPE configuration")
+		os.Exit(1)
 	}
 
 	loglevel := strings.ToLower(os.Getenv("LEGO_LOG_LEVEL"))
@@ -96,10 +104,19 @@ func (kl *KubeLego) Init() {
 		kl.Log().Fatal(err)
 	}
 
-	// initialising ingress providers
-	kl.legoIngressProvider = map[string]kubelego.IngressProvider{
-		"gce":   gce.New(kl),
-		"nginx": nginx.New(kl),
+	kl.legoIngressProvider = map[string]kubelego.IngressProvider{}
+	for _, provider := range kl.legoSupportedIngressProvider {
+		switch provider {
+		case "gce":
+			kl.legoIngressProvider["gce"] = gce.New(kl)
+			break
+		case "nginx":
+			kl.legoIngressProvider["nginx"] = nginx.New(kl)
+			break
+		default:
+			kl.Log().Warnf("Unsupported provider [%s], please add a handler in kubelego.go#Init()", provider)
+			break
+		}
 	}
 
 	// start workers
@@ -186,6 +203,10 @@ func (kl *KubeLego) LegoSupportedIngressClass() []string {
 	return kl.legoSupportedIngressClass
 }
 
+func (kl *KubeLego) LegoSupportedIngressProvider() []string {
+	return kl.legoSupportedIngressProvider
+}
+
 func (kl *KubeLego) LegoServiceNameNginx() string {
 	return kl.legoServiceNameNginx
 }
@@ -265,9 +286,18 @@ func (kl *KubeLego) paramsLego() error {
 		kl.legoServiceNameGce = "kube-lego-gce"
 	}
 
-	kl.legoSupportedIngressClass = strings.Split(os.Getenv("LEGO_SUPPORTED_INGRESS_CLASS"),",")
-	if len(kl.legoSupportedIngressClass) == 1 {
+	supportedProviders := os.Getenv("LEGO_SUPPORTED_INGRESS_PROVIDER")
+	if len(supportedProviders) == 0 {
+		kl.legoSupportedIngressProvider = kubelego.SupportedIngressProviders
+	} else {
+		kl.legoSupportedIngressProvider = strings.Split(supportedProviders, ",")
+	}
+
+	legoSupportedIngressClass := os.Getenv("LEGO_SUPPORTED_INGRESS_CLASS")
+	if len(legoSupportedIngressClass) == 0 {
 		kl.legoSupportedIngressClass = kubelego.SupportedIngressClasses
+	} else {
+		kl.legoSupportedIngressClass = strings.Split(legoSupportedIngressClass, ",")
 	}
 
 	legoDefaultIngressClass := os.Getenv("LEGO_DEFAULT_INGRESS_CLASS")
