@@ -2,6 +2,7 @@ package kubelego
 
 import (
 	"net"
+	"regexp"
 	"time"
 
 	"github.com/Sirupsen/logrus"
@@ -29,6 +30,7 @@ type KubeLego interface {
 	LegoCheckInterval() time.Duration
 	LegoMinimumValidity() time.Duration
 	LegoPodIP() net.IP
+	LegoHostFilterRegexps() []*regexp.Regexp
 	IngressProvider(string) (IngressProvider, error)
 	Version() string
 	AcmeUser() (map[string][]byte, error)
@@ -41,6 +43,7 @@ type Acme interface {
 
 type Tls interface {
 	Hosts() []string
+	SetHosts([]string)
 	SecretMetadata() *k8sApi.ObjectMeta
 	IngressMetadata() *k8sApi.ObjectMeta
 	Process() error

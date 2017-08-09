@@ -6,6 +6,7 @@ import (
 	"net"
 	"os"
 	"os/signal"
+	"regexp"
 	"strconv"
 	"strings"
 	"sync"
@@ -227,6 +228,10 @@ func (kl *KubeLego) LegoKubeApiURL() string {
 	return kl.legoKubeApiURL
 }
 
+func (kl *KubeLego) LegoHostFilterRegexps() []*regexp.Regexp {
+	return kl.legoHostFilterRegexps
+}
+
 func (kl *KubeLego) acmeSecret() *secret.Secret {
 	return secret.New(kl, kl.LegoNamespace(), kl.legoSecretName)
 }
@@ -376,5 +381,17 @@ func (kl *KubeLego) paramsLego() error {
 	} else {
 		kl.legoWatchNamespace = watchNamespace
 	}
+
+	legoHostFilters := strings.Split(os.Getenv("LEGO_HOST_FILTERS"), ",")
+	for _, filter := range legoHostFilters {
+		r, err := regexp.Compile(filter)
+		if err != nil {
+			kl.Log().Warnf("could not compile regexp %s, ignoring", filter)
+			continue
+		}
+
+		kl.legoHostFilterRegexps = append(kl.legoHostFilterRegexps, r)
+	}
+
 	return nil
 }

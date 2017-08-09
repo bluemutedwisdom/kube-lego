@@ -3,10 +3,34 @@ package kubelego
 import (
 	"github.com/Shopify/kube-lego/pkg/ingress"
 	"github.com/Shopify/kube-lego/pkg/kubelego_const"
+	"github.com/Shopify/kube-lego/pkg/utils"
 
 	"fmt"
 	"strings"
 )
+
+func (kl *KubeLego) TlsFilterHosts(tlsSlice []kubelego.Tls) []kubelego.Tls {
+
+	output := []kubelego.Tls{}
+	for _, elm := range tlsSlice {
+		hosts := []string{}
+
+		for _, host := range elm.Hosts() {
+			if utils.RegexpSliceMatchString(kl.LegoHostFilterRegexps(), host) {
+				kl.Log().Infof("ignoring host %s because it matched a regexp", host)
+				continue
+			}
+
+			hosts = append(hosts, host)
+		}
+
+		elm.SetHosts(hosts)
+
+		output = append(output, elm)
+	}
+
+	return output
+}
 
 func (kl *KubeLego) TlsIgnoreDuplicatedSecrets(tlsSlice []kubelego.Tls) []kubelego.Tls {
 
@@ -97,6 +121,9 @@ func (kl *KubeLego) reconfigure(ingressesAll []kubelego.Ingress) error {
 
 	// normify tls config
 	tlsSlice = kl.TlsIgnoreDuplicatedSecrets(tlsSlice)
+
+	// filter hosts
+	tlsSlice = kl.TlsFilterHosts(tlsSlice)
 
 	// process certificate validity
 	kl.Log().Info("process certificate requests for ingresses")
