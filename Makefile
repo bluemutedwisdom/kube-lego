@@ -25,7 +25,7 @@ all: test build
 
 codegen:
 	which mockgen
-	mockgen -imports .=github.com/jetstack/kube-lego/pkg/kubelego_const -package=mocks -source=pkg/kubelego_const/interfaces.go > pkg/mocks/mocks.go
+	mockgen -imports .=github.com/Shopify/kube-lego/pkg/kubelego_const -package=mocks -source=pkg/kubelego_const/interfaces.go > pkg/mocks/mocks.go
 
 depend:
 	rm -rf $(TEST_DIR)/
