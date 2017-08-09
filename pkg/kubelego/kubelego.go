@@ -228,8 +228,8 @@ func (kl *KubeLego) LegoKubeApiURL() string {
 	return kl.legoKubeApiURL
 }
 
-func (kl *KubeLego) LegoHostFilterRegexps() []*regexp.Regexp {
-	return kl.legoHostFilterRegexps
+func (kl *KubeLego) LegoHostFilters() []*regexp.Regexp {
+	return kl.legoHostFilters
 }
 
 func (kl *KubeLego) acmeSecret() *secret.Secret {
@@ -390,7 +390,7 @@ func (kl *KubeLego) paramsLego() error {
 			continue
 		}
 
-		kl.legoHostFilterRegexps = append(kl.legoHostFilterRegexps, r)
+		kl.legoHostFilters = append(kl.legoHostFilters, r)
 	}
 
 	return nil

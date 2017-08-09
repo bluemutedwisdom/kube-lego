@@ -2,9 +2,11 @@ package ingress
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 
 	"github.com/Shopify/kube-lego/pkg/kubelego_const"
+	"github.com/Shopify/kube-lego/pkg/utils"
 
 	"github.com/Sirupsen/logrus"
 	k8sErrors "k8s.io/apimachinery/pkg/api/errors"
@@ -200,6 +202,22 @@ func (i *Ingress) Ignore() bool {
 
 func (i *Ingress) KubeLego() kubelego.KubeLego {
 	return i.kubelego
+}
+
+func (i *Ingress) FilterTlsHosts(filters []*regexp.Regexp) {
+	for count, _ := range i.IngressApi.Spec.TLS {
+		hosts := []string{}
+		tls := &i.IngressApi.Spec.TLS[count]
+
+		for _, host := range tls.Hosts {
+			if utils.RegexpSliceMatchString(filters, host) {
+				continue
+			}
+			hosts = append(hosts, host)
+		}
+
+		tls.Hosts = hosts
+	}
 }
 
 func (i *Ingress) Tls() (out []kubelego.Tls) {

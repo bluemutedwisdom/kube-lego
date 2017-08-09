@@ -55,10 +55,6 @@ func (t *Tls) Secret() kubelego.Secret {
 	return secret.New(t.ingress.KubeLego(), meta.Namespace, meta.Name)
 }
 
-func (t *Tls) SetHosts(hosts []string) {
-	t.IngressTLS.Hosts = hosts
-}
-
 func (t *Tls) Hosts() []string {
 	return utils.StringSliceLowerCase(t.IngressTLS.Hosts)
 }

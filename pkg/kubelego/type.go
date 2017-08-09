@@ -32,7 +32,7 @@ type KubeLego struct {
 	legoDefaultIngressClass      string
 	legoDefaultIngressProvider   string
 	legoKubeApiURL               string
-	legoHostFilterRegexps        []*regexp.Regexp
+	legoHostFilters              []*regexp.Regexp
 	legoWatchNamespace           string
 	kubeClient                   *kubernetes.Clientset
 	legoIngressSlice             []*ingress.Ingress

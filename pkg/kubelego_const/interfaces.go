@@ -30,7 +30,7 @@ type KubeLego interface {
 	LegoCheckInterval() time.Duration
 	LegoMinimumValidity() time.Duration
 	LegoPodIP() net.IP
-	LegoHostFilterRegexps() []*regexp.Regexp
+	LegoHostFilters() []*regexp.Regexp
 	IngressProvider(string) (IngressProvider, error)
 	Version() string
 	AcmeUser() (map[string][]byte, error)
@@ -43,7 +43,6 @@ type Acme interface {
 
 type Tls interface {
 	Hosts() []string
-	SetHosts([]string)
 	SecretMetadata() *k8sApi.ObjectMeta
 	IngressMetadata() *k8sApi.ObjectMeta
 	Process() error
@@ -77,6 +76,7 @@ type Ingress interface {
 	IngressProvider() string
 	Tls() []Tls
 	Ignore() bool
+	FilterTlsHosts([]*regexp.Regexp)
 }
 
 type IngressProvider interface {
