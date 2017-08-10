@@ -210,7 +210,8 @@ func (i *Ingress) FilterTlsHosts(filters []*regexp.Regexp) {
 		tls := &i.IngressApi.Spec.TLS[count]
 
 		for _, host := range tls.Hosts {
-			if utils.RegexpSliceMatchString(filters, host) {
+			if filter := utils.RegexpSliceMatchString(filters, host); filter != nil {
+				i.Log().Debugf("host %s is ignored because it matches host filter %s", host, filter.String())
 				continue
 			}
 			hosts = append(hosts, host)

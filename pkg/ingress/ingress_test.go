@@ -4,11 +4,17 @@ import (
 	"regexp"
 	"testing"
 
+	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	k8sExtensions "k8s.io/client-go/pkg/apis/extensions/v1beta1"
+
+	"github.com/Shopify/kube-lego/pkg/mocks"
 )
 
 func TestFilterTlsHosts(t *testing.T) {
+	ctrlMock := gomock.NewController(t)
+	defer ctrlMock.Finish()
+
 	ing := &Ingress{
 		IngressApi: &k8sExtensions.Ingress{
 			Spec: k8sExtensions.IngressSpec{
@@ -25,6 +31,7 @@ func TestFilterTlsHosts(t *testing.T) {
 			},
 		},
 	}
+	ing.kubelego = mocks.DummyKubeLego(ctrlMock)
 
 	assert.Equal(t, []string{"domain1", "sub.custom-domain.ca"}, ing.Tls()[0].Hosts())
 	assert.Equal(t, []string{"*.domain.com"}, ing.Tls()[1].Hosts())
@@ -35,7 +42,7 @@ func TestFilterTlsHosts(t *testing.T) {
 	assert.Equal(t, []string{"domain1", "sub.custom-domain.ca"}, ing.Tls()[0].Hosts())
 	assert.Equal(t, []string{"*.domain.com"}, ing.Tls()[1].Hosts())
 
-	subDomainsFilter, err := regexp.Compile(".*\\.custom-domain\\.ca")
+	subDomainsFilter, err := regexp.Compile(".*\\.custom-domain\\.ca$")
 	assert.Nil(t, err)
 	filters = append(filters, subDomainsFilter)
 	ing.FilterTlsHosts(filters)

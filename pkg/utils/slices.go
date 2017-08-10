@@ -42,12 +42,12 @@ func HashStringSlice(in []string) string {
 	return fmt.Sprintf("%x", h.Sum(nil))
 }
 
-func RegexpSliceMatchString(filters []*regexp.Regexp, s string) bool {
+func RegexpSliceMatchString(filters []*regexp.Regexp, s string) *regexp.Regexp {
 	for _, filter := range filters {
 		if filter.MatchString(s) {
-			return true
+			return filter
 		}
 	}
 
-	return false
+	return nil
 }
