@@ -88,6 +88,7 @@ func (kl *KubeLego) reconfigure(ingressesAll []kubelego.Ingress) error {
 		if ing.Ignore() {
 			continue
 		}
+		ing.FilterTlsHosts(kl.LegoHostFilters())
 		tlsSlice = append(tlsSlice, ing.Tls()...)
 		ingresses = append(ingresses, ing)
 	}

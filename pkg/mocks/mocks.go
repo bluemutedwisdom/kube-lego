@@ -4,16 +4,16 @@
 package mocks
 
 import (
-	net "net"
-	time "time"
-
+	. "github.com/Shopify/kube-lego/pkg/kubelego_const"
 	logrus "github.com/Sirupsen/logrus"
 	gomock "github.com/golang/mock/gomock"
-	. "github.com/Shopify/kube-lego/pkg/kubelego_const"
 	intstr "k8s.io/apimachinery/pkg/util/intstr"
 	kubernetes "k8s.io/client-go/kubernetes"
 	v1 "k8s.io/client-go/pkg/api/v1"
 	v1beta1 "k8s.io/client-go/pkg/apis/extensions/v1beta1"
+	net "net"
+	regexp "regexp"
+	time "time"
 )
 
 // Mock of KubeLego interface
@@ -157,16 +157,6 @@ func (_mr *_MockKubeLegoRecorder) LegoDefaultIngressClass() *gomock.Call {
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "LegoDefaultIngressClass")
 }
 
-func (_m *MockKubeLego) LegoDefaultIngressProvider() string {
-	ret := _m.ctrl.Call(_m, "LegoDefaultIngressProvider")
-	ret0, _ := ret[0].(string)
-	return ret0
-}
-
-func (_mr *_MockKubeLegoRecorder) LegoDefaultIngressProvider() *gomock.Call {
-	return _mr.mock.ctrl.RecordCall(_mr.mock, "LegoDefaultIngressProvider")
-}
-
 func (_m *MockKubeLego) LegoSupportedIngressClass() []string {
 	ret := _m.ctrl.Call(_m, "LegoSupportedIngressClass")
 	ret0, _ := ret[0].([]string)
@@ -215,6 +205,16 @@ func (_m *MockKubeLego) LegoPodIP() net.IP {
 
 func (_mr *_MockKubeLegoRecorder) LegoPodIP() *gomock.Call {
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "LegoPodIP")
+}
+
+func (_m *MockKubeLego) LegoHostFilters() []*regexp.Regexp {
+	ret := _m.ctrl.Call(_m, "LegoHostFilters")
+	ret0, _ := ret[0].([]*regexp.Regexp)
+	return ret0
+}
+
+func (_mr *_MockKubeLegoRecorder) LegoHostFilters() *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "LegoHostFilters")
 }
 
 func (_m *MockKubeLego) IngressProvider(_param0 string) (IngressProvider, error) {
@@ -623,6 +623,14 @@ func (_m *MockIngress) Ignore() bool {
 
 func (_mr *_MockIngressRecorder) Ignore() *gomock.Call {
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "Ignore")
+}
+
+func (_m *MockIngress) FilterTlsHosts(_param0 []*regexp.Regexp) {
+	_m.ctrl.Call(_m, "FilterTlsHosts", _param0)
+}
+
+func (_mr *_MockIngressRecorder) FilterTlsHosts(arg0 interface{}) *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "FilterTlsHosts", arg0)
 }
 
 // Mock of IngressProvider interface

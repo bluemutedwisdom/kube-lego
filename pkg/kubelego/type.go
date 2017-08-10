@@ -2,12 +2,13 @@ package kubelego
 
 import (
 	"net"
+	"regexp"
 	"sync"
 	"time"
 
-	log "github.com/Sirupsen/logrus"
 	"github.com/Shopify/kube-lego/pkg/ingress"
 	"github.com/Shopify/kube-lego/pkg/kubelego_const"
+	log "github.com/Sirupsen/logrus"
 
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/kubernetes"
@@ -29,8 +30,8 @@ type KubeLego struct {
 	legoCheckInterval            time.Duration
 	legoMinimumValidity          time.Duration
 	legoDefaultIngressClass      string
-	legoDefaultIngressProvider   string
 	legoKubeApiURL               string
+	legoHostFilters              []*regexp.Regexp
 	legoWatchNamespace           string
 	kubeClient                   *kubernetes.Clientset
 	legoIngressSlice             []*ingress.Ingress
