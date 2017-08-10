@@ -13,8 +13,8 @@ import (
 	"net/url"
 	"sync"
 
-	"github.com/cenk/backoff"
 	"github.com/Shopify/kube-lego/pkg/kubelego_const"
+	"github.com/cenk/backoff"
 	"golang.org/x/crypto/acme"
 	"golang.org/x/net/context"
 	"time"
@@ -36,7 +36,7 @@ func (a *Acme) ensureAcmeClient() error {
 
 	account, err := a.validateUser(client, accountURI)
 	if err != nil {
-		a.Log().Fatalf("fatal error verifying existing user: %s", err)
+		a.Log().Errorf("fatal error verifying existing user: %s", err)
 		return err
 	}
 	a.acmeAccount = account
