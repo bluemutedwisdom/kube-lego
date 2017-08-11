@@ -136,7 +136,7 @@ func (a *Acme) ObtainCertificate(domains []string) (data map[string][]byte, err 
 			op := func() error {
 				auth, err := a.verifyDomain(domain)
 				if err != nil {
-					log.Debugf("error while authorizing: %s", err)
+					log.Warnf("error while authorizing: %s", err)
 					return err
 				}
 				log.Debugf("got authorization: %+v", auth)
