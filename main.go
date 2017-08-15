@@ -2,8 +2,12 @@ package main
 
 import (
 	"flag"
+	"os"
 
 	"github.com/Shopify/kube-lego/pkg/kubelego"
+
+	log "github.com/Sirupsen/logrus"
+	bugsnag "github.com/bugsnag/bugsnag-go"
 )
 
 var AppVersion = "unknown"
@@ -21,6 +25,18 @@ func Version() string {
 		version += AppGitState
 	}
 	return version
+}
+
+func init() {
+	apiKey := os.Getenv("LEGO_BUGSNAG_API_KEY")
+	if apiKey == "" {
+		log.Fatal("LEGO_BUGSNAG_API_KEY is required to setup Bugsnag")
+	}
+
+	bugsnag.Configure(bugsnag.Configuration{
+		APIKey:       apiKey,
+		ReleaseStage: "production",
+	})
 }
 
 func main() {
