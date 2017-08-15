@@ -40,7 +40,6 @@ func makeLog() *log.Entry {
 		log.SetFormatter(&log.TextFormatter{})
 	} else {
 		log.WithField("logtype", logtype).Fatal("Given logtype was not valid, check LEGO_LOG_TYPE configuration")
-		os.Exit(1)
 	}
 
 	loglevel := strings.ToLower(os.Getenv("LEGO_LOG_LEVEL"))
