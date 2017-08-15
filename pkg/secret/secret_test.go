@@ -116,7 +116,8 @@ func TestSecret_TlsDomainsInclude(t *testing.T) {
 		domains,
 	)
 
-	assert.True(t, s.TlsDomainsInclude([]string{"shopifycloud.com", "www.shopifycloud.com", "random-subdomain.shopifycloud.com"}))
+	assert.True(t, s.TlsDomainsInclude([]string{"shopifycloud.com", "www.shopifycloud.com", "random-subdomain.shopifycloud.com", "my_app.shopifycloud.com"}))
+	assert.True(t, s.TlsDomainsInclude([]string{"əşii.shopifycloud.com"}))
 	assert.False(t, s.TlsDomainsInclude([]string{"sub.sub.shopifycloud.com"}))
 	assert.False(t, s.TlsDomainsInclude([]string{"shopifycloud.com", "anotherdomain.com"}))
 	assert.False(t, s.TlsDomainsInclude([]string{"incorrect,subdomain.shopifycloud.com"}))

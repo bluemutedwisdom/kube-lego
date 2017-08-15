@@ -116,7 +116,7 @@ func (o *Secret) TlsDomainsInclude(domains []string) bool {
 		tlsDomainsMap[domain] = true
 	}
 
-	re := regexp.MustCompile("^[a-zA-Z0-9\\-]+\\.")
+	re := regexp.MustCompile("^[\\p{L}\\d_\\-]+\\.")
 	for _, domain := range domains {
 		if val, ok := tlsDomainsMap[domain]; !ok || !val {
 			domainWildcardPattern := re.ReplaceAllString(domain, "*.$2")
