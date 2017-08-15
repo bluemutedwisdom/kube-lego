@@ -20,7 +20,6 @@ import (
 	"github.com/Shopify/kube-lego/pkg/provider/nginx"
 	"github.com/Shopify/kube-lego/pkg/secret"
 
-	"github.com/Shopify/logrus-bugsnag"
 	log "github.com/Sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/kubernetes"
@@ -30,10 +29,6 @@ import (
 var _ kubelego.KubeLego = &KubeLego{}
 
 func makeLog() *log.Entry {
-	if err := setupLogrusBugsnagHook(); err != nil {
-		log.Fatal(err)
-	}
-
 	logtype := strings.ToLower(os.Getenv("LEGO_LOG_TYPE"))
 	if logtype == "" {
 		logtype = "text"
@@ -62,16 +57,6 @@ func makeLog() *log.Entry {
 		log.SetLevel(log.InfoLevel)
 	}
 	return log.WithField("context", "kubelego")
-}
-
-func setupLogrusBugsnagHook() error {
-	hook, err := logrus_bugsnag.NewBugsnagHook()
-	if err != nil {
-		return err
-	}
-	log.AddHook(hook)
-
-	return nil
 }
 
 func New(version string) *KubeLego {

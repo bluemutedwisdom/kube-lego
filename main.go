@@ -6,6 +6,7 @@ import (
 
 	"github.com/Shopify/kube-lego/pkg/kubelego"
 
+	"github.com/Shopify/logrus-bugsnag"
 	log "github.com/Sirupsen/logrus"
 	bugsnag "github.com/bugsnag/bugsnag-go"
 )
@@ -27,7 +28,7 @@ func Version() string {
 	return version
 }
 
-func init() {
+func setupBugsnag() {
 	apiKey := os.Getenv("LEGO_BUGSNAG_API_KEY")
 	if apiKey == "" {
 		log.Fatal("LEGO_BUGSNAG_API_KEY is required to setup Bugsnag")
@@ -37,9 +38,17 @@ func init() {
 		APIKey:       apiKey,
 		ReleaseStage: "production",
 	})
+
+	hook, err := logrus_bugsnag.NewBugsnagHook()
+	if err != nil {
+		log.Fatal("error happened while seting up logrus Bugsnag hook", err)
+	}
+	log.AddHook(hook)
 }
 
 func main() {
+	setupBugsnag()
+
 	// parse standard command line arguments
 	flag.Parse()
 
