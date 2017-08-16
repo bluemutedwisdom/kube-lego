@@ -249,6 +249,24 @@ func (kl *KubeLego) SaveAcmeUser(data map[string][]byte) error {
 	return s.Save()
 }
 
+func (kl *KubeLego) parseHostFilters() {
+	legoHostFilters := strings.Split(os.Getenv("LEGO_HOST_FILTERS"), ",")
+	for _, rawfilter := range legoHostFilters {
+		filter := strings.TrimSpace(rawfilter)
+		if filter == "" {
+			continue
+		}
+
+		r, err := regexp.Compile(filter)
+		if err != nil {
+			kl.Log().Warnf("could not compile regexp %s, ignoring", filter)
+			continue
+		}
+
+		kl.legoHostFilters = append(kl.legoHostFilters, r)
+	}
+}
+
 // read config parameters from ENV vars
 func (kl *KubeLego) paramsLego() error {
 
@@ -381,16 +399,7 @@ func (kl *KubeLego) paramsLego() error {
 		kl.legoWatchNamespace = watchNamespace
 	}
 
-	legoHostFilters := strings.Split(os.Getenv("LEGO_HOST_FILTERS"), ",")
-	for _, filter := range legoHostFilters {
-		r, err := regexp.Compile(filter)
-		if err != nil {
-			kl.Log().Warnf("could not compile regexp %s, ignoring", filter)
-			continue
-		}
-
-		kl.legoHostFilters = append(kl.legoHostFilters, r)
-	}
+	kl.parseHostFilters()
 
 	return nil
 }

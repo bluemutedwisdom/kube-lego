@@ -205,6 +205,11 @@ func (i *Ingress) KubeLego() kubelego.KubeLego {
 }
 
 func (i *Ingress) FilterTlsHosts(filters []*regexp.Regexp) {
+	if len(filters) == 0 {
+		i.Log().Debugf("no filter given, doing nothing")
+		return
+	}
+
 	for count, _ := range i.IngressApi.Spec.TLS {
 		hosts := []string{}
 		tls := &i.IngressApi.Spec.TLS[count]
