@@ -176,14 +176,14 @@ func (a *Acme) ObtainCertificate(domains []string) (data map[string][]byte, err 
 		}
 	}
 
-	if len(successfulDomains) == 0 {
-		return data, fmt.Errorf("no domain could be authorized successfully")
-	}
-
 	if len(failedDomains) > 0 {
 		a.Log().WithField("failed_domains", failedDomains).Warnf("authorization failed for some domains")
 	}
 	// TODO: Mark failed domains as failed in ingress
+
+	if len(successfulDomains) == 0 {
+		return data, fmt.Errorf("no domain could be authorized successfully")
+	}
 
 	domains = successfulDomains
 
