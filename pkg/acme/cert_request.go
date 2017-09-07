@@ -146,8 +146,9 @@ func (a *Acme) ObtainCertificate(domains []string) (data map[string][]byte, err 
 			b := backoff.NewExponentialBackOff()
 			// At least for nginx, takes some time for the new
 			// ingress rule to kick in
-			b.InitialInterval = time.Duration(time.Second * 15)
+			b.InitialInterval = time.Duration(time.Second * 30)
 			b.MaxElapsedTime = time.Duration(time.Minute * 5)
+			b.Multiplier = 2
 
 			err = backoff.Retry(op, b)
 			if err != nil {
