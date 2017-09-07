@@ -86,7 +86,7 @@ func (s *Service) Save() error {
 		s.exists = true
 	}
 	if err != nil {
-		return nil
+		return err
 	}
 
 	s.ServiceApi = obj
