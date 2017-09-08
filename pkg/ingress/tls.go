@@ -107,7 +107,12 @@ func (i *Tls) Process() error {
 		return nil
 	}
 
-	return i.RequestCert()
+	err := i.RequestCert()
+	if err != nil {
+		i.Log().Error("failed to request certificate", err)
+	}
+
+	return err
 }
 
 func (i *Tls) RequestCert() error {
