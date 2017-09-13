@@ -39,17 +39,10 @@ func (a *Acme) Mux() *http.ServeMux {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "text/plain")
-		if r.URL.Path == "/" {
-			w.WriteHeader(http.StatusOK)
-			fmt.Fprint(w, "ok")
-		} else {
-			w.WriteHeader(http.StatusNotFound)
-			fmt.Fprintf(w, a.notFound)
-		}
-	})
-
-	mux.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
+		a.Log().WithFields(logrus.Fields{
+			"path":       r.URL.Path,
+			"user-agent": r.UserAgent(),
+		}).Info("kube-lego pod, general endpoint received a web request")
 		w.Header().Set("Content-Type", "text/plain")
 		w.WriteHeader(http.StatusOK)
 		fmt.Fprint(w, "ok")
