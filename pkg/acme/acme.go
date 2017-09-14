@@ -42,7 +42,6 @@ func (a *Acme) Mux() *http.ServeMux {
 		a.Log().WithFields(logrus.Fields{
 			"path":       r.URL.Path,
 			"user-agent": r.UserAgent(),
-			"host":       r.Host,
 		}).Debug("kube-lego pod, general endpoint received a web request")
 		w.Header().Set("Content-Type", "text/plain")
 		w.WriteHeader(http.StatusOK)
