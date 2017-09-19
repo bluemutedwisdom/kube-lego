@@ -7,7 +7,6 @@ import (
 	"github.com/Shopify/kube-lego/pkg/secret"
 	"github.com/Shopify/kube-lego/pkg/utils"
 
-	"fmt"
 	"github.com/Sirupsen/logrus"
 	k8sApi "k8s.io/client-go/pkg/api/v1"
 	k8sExtensions "k8s.io/client-go/pkg/apis/extensions/v1beta1"
