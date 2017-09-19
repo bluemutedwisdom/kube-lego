@@ -22,17 +22,6 @@ type Tls struct {
 	secret  kubelego.Secret
 }
 
-func (t *Tls) Validate() error {
-	if len(t.Hosts()) == 0 {
-		return fmt.Errorf("No hosts specified")
-	}
-
-	if t.SecretName == "" {
-		return fmt.Errorf("No secret name specified")
-	}
-	return nil
-}
-
 func (t Tls) SecretMetadata() (meta *k8sApi.ObjectMeta) {
 	return &k8sApi.ObjectMeta{
 		Namespace: t.ingress.Object().Namespace,
