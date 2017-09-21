@@ -91,7 +91,7 @@ func (i *Tls) newCertNeeded() bool {
 func (i *Tls) Process() error {
 
 	if !i.newCertNeeded() {
-		i.Log().Infof("no cert request needed")
+		i.Log().Debug("no cert request needed")
 		return nil
 	}
 
