@@ -66,7 +66,9 @@ func (kl *KubeLego) processProvider(ings []kubelego.Ingress) (err error) {
 			if providerName == ing.IngressProvider() {
 				err = provider.Process(ing)
 				if err != nil {
-					provider.Log().Error(err)
+					provider.Log().WithFields(logrus.Fields{
+						"namespace": ing.IngressApi.Namespace,
+						"ingress":   ing.IngressApi.Name}).Error(err)
 				}
 			}
 		}
