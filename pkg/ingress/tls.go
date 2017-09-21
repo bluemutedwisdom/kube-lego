@@ -7,7 +7,6 @@ import (
 	"github.com/Shopify/kube-lego/pkg/secret"
 	"github.com/Shopify/kube-lego/pkg/utils"
 
-	"fmt"
 	"github.com/Sirupsen/logrus"
 	k8sApi "k8s.io/client-go/pkg/api/v1"
 	k8sExtensions "k8s.io/client-go/pkg/apis/extensions/v1beta1"
@@ -20,17 +19,6 @@ type Tls struct {
 	*k8sExtensions.IngressTLS
 	ingress kubelego.Ingress
 	secret  kubelego.Secret
-}
-
-func (t *Tls) Validate() error {
-	if len(t.Hosts()) == 0 {
-		return fmt.Errorf("No hosts specified")
-	}
-
-	if t.SecretName == "" {
-		return fmt.Errorf("No secret name specified")
-	}
-	return nil
 }
 
 func (t Tls) SecretMetadata() (meta *k8sApi.ObjectMeta) {
