@@ -11,7 +11,9 @@ import (
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	k8sMeta "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
+	k8sApi "k8s.io/client-go/pkg/api/v1"
 	k8sExtensions "k8s.io/client-go/pkg/apis/extensions/v1beta1"
 	"k8s.io/client-go/rest"
 	"net/http"
@@ -94,6 +96,12 @@ var _ = Describe("Tls", func() {
 					[]string{"das.de.de", "k8s.io"},
 				).AnyTimes().Return(true)
 
+				secretObject := &k8sApi.Secret{
+					ObjectMeta: k8sMeta.ObjectMeta{
+						Name: tls.SecretMetadata().Name,
+					},
+				}
+				mockSec.EXPECT().Object().AnyTimes().Return(secretObject)
 			})
 			It("should be true for expired", func() {
 				mockSec.EXPECT().TlsExpireTime().AnyTimes().Return(

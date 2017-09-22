@@ -12,12 +12,14 @@ import (
 	"net/http"
 	"net/url"
 	"sync"
+	"time"
 
 	"github.com/Shopify/kube-lego/pkg/kubelego_const"
 	"github.com/cenk/backoff"
 	"golang.org/x/crypto/acme"
 	"golang.org/x/net/context"
-	"time"
+
+	"github.com/Sirupsen/logrus"
 )
 
 func (a *Acme) ensureAcmeClient() error {
@@ -222,8 +224,12 @@ func (a *Acme) ObtainCertificate(domains []string) (data map[string][]byte, err 
 		pem.Encode(certBuffer, &pem.Block{Type: "CERTIFICATE", Bytes: cert})
 	}
 
-	a.Log().Infof("successfully got certificate: domains=%+v url=%s", domains, certUrl)
-	a.Log().Debugf("certificate pem data:\n%s", certBuffer.String())
+	logger := a.Log().WithFields(logrus.Fields{
+		"domains":  domains,
+		"cert_url": certUrl,
+	})
+	logger.Info("successfully got certificate")
+	logger.Debugf("certificate pem data:\n%s", certBuffer.String())
 
 	data = map[string][]byte{
 		kubelego.TLSCertKey:       certBuffer.Bytes(),

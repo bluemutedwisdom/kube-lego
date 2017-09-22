@@ -1,11 +1,13 @@
 package kubelego
 
 import (
+	"fmt"
+	"strings"
+
 	"github.com/Shopify/kube-lego/pkg/ingress"
 	"github.com/Shopify/kube-lego/pkg/kubelego_const"
 
-	"fmt"
-	"strings"
+	"github.com/Sirupsen/logrus"
 )
 
 func (kl *KubeLego) TlsIgnoreDuplicatedSecrets(tlsSlice []kubelego.Tls) []kubelego.Tls {
@@ -66,7 +68,10 @@ func (kl *KubeLego) processProvider(ings []kubelego.Ingress) (err error) {
 			if providerName == ing.IngressProvider() {
 				err = provider.Process(ing)
 				if err != nil {
-					provider.Log().Error(err)
+					provider.Log().WithFields(logrus.Fields{
+						"namespace": ing.Object().Namespace,
+						"ingress":   ing.Object().Name,
+					}).Error(err)
 				}
 			}
 		}

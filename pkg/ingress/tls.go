@@ -59,25 +59,32 @@ func (i *Tls) newCertNeeded() bool {
 	}
 
 	tlsSecret := i.Secret()
+	logger := i.Log().WithFields(logrus.Fields{
+		"secret_name": tlsSecret.Object().Name,
+		"domains":     i.Hosts(),
+	})
+
 	if !tlsSecret.Exists() {
 		i.Log().Info("no cert associated with ingress")
 		return true
 	}
 
 	if !tlsSecret.TlsDomainsInclude(i.Hosts()) {
-		i.Log().WithField("domains", i.Hosts()).Info("cert does not cover all domains")
+		logger.Info("cert does not cover all domains")
 		return true
 	}
 
 	expireTime, err := tlsSecret.TlsExpireTime()
 	if err != nil {
-		i.Log().Warn("error while reading expiry time: ", err)
+		logger.Warn("error while reading expiry time: ", err)
 		return true
 	}
-
 	minimumValidity := i.ingress.KubeLego().LegoMinimumValidity()
+	logger = logger.WithFields(logrus.Fields{
+		"expire_time":      expireTime.String(),
+		"minimum_validity": minimumValidity.String(),
+	})
 	timeLeft := expireTime.Sub(time.Now())
-	logger := i.Log().WithField("expire_time", expireTime)
 	if timeLeft < minimumValidity {
 		logger.Infof("cert expires soon so renew")
 		return true
@@ -91,7 +98,7 @@ func (i *Tls) newCertNeeded() bool {
 func (i *Tls) Process() error {
 
 	if !i.newCertNeeded() {
-		i.Log().Infof("no cert request needed")
+		i.Log().Debug("no cert request needed")
 		return nil
 	}
 
