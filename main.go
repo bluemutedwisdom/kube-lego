@@ -37,6 +37,7 @@ func setupBugsnag() {
 	bugsnag.Configure(bugsnag.Configuration{
 		APIKey:       apiKey,
 		ReleaseStage: "production",
+		Synchronous:  true,
 	})
 
 	hook, err := logrus_bugsnag.NewBugsnagHook()
