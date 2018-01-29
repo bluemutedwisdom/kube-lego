@@ -117,6 +117,11 @@ func (p *Gce) Process(ingObj kubelego.Ingress) (err error) {
 			}
 		}
 
+		if rule.HTTP == nil {
+			p.Log().WithField("host", rule.Host).Debug("rule does not have http configured, ignoring")
+			continue
+		}
+
 		// remove existing challenge paths
 		for _, path := range rule.HTTP.Paths {
 			if path.Path == challengePath {
