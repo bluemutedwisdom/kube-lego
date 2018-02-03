@@ -1,0 +1,5 @@
+steps:
+  - name: 'Build container'
+    command: pipa build -x --push -- ./BUILD $PIPA_IMAGE_FULL_NAME
+    agents:
+      - queue=pipa-production

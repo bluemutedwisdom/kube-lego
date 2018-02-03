@@ -6,18 +6,19 @@ import (
 	"net"
 	"os"
 	"os/signal"
+	"regexp"
 	"strconv"
 	"strings"
 	"sync"
 	"syscall"
 	"time"
 
-	"github.com/jetstack/kube-lego/pkg/acme"
-	"github.com/jetstack/kube-lego/pkg/ingress"
-	kubelego "github.com/jetstack/kube-lego/pkg/kubelego_const"
-	"github.com/jetstack/kube-lego/pkg/provider/gce"
-	"github.com/jetstack/kube-lego/pkg/provider/nginx"
-	"github.com/jetstack/kube-lego/pkg/secret"
+	"github.com/Shopify/kube-lego/pkg/acme"
+	"github.com/Shopify/kube-lego/pkg/ingress"
+	kubelego "github.com/Shopify/kube-lego/pkg/kubelego_const"
+	"github.com/Shopify/kube-lego/pkg/provider/gce"
+	"github.com/Shopify/kube-lego/pkg/provider/nginx"
+	"github.com/Shopify/kube-lego/pkg/secret"
 
 	log "github.com/Sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -39,7 +40,6 @@ func makeLog() *log.Entry {
 		log.SetFormatter(&log.TextFormatter{})
 	} else {
 		log.WithField("logtype", logtype).Fatal("Given logtype was not valid, check LEGO_LOG_TYPE configuration")
-		os.Exit(1)
 	}
 
 	loglevel := strings.ToLower(os.Getenv("LEGO_LOG_LEVEL"))
@@ -142,7 +142,7 @@ func (kl *KubeLego) Init() {
 	go func() {
 		for timestamp := range ticker.C {
 			kl.Log().Infof("Periodically check certificates at %s", timestamp)
-			kl.requestReconfigure()
+			kl.requestReconfigure(kl.LegoWatchNamespace())
 		}
 	}()
 
@@ -247,6 +247,10 @@ func (kl *KubeLego) LegoRsaKeySize() int {
 	return kl.legoRsaKeySize
 }
 
+func (kl *KubeLego) LegoHostFilters() []*regexp.Regexp {
+	return kl.legoHostFilters
+}
+
 func (kl *KubeLego) acmeSecret() *secret.Secret {
 	return secret.New(kl, kl.LegoNamespace(), kl.legoSecretName)
 }
@@ -263,6 +267,24 @@ func (kl *KubeLego) SaveAcmeUser(data map[string][]byte) error {
 	s := kl.acmeSecret()
 	s.SecretApi.Data = data
 	return s.Save()
+}
+
+func (kl *KubeLego) parseHostFilters() {
+	legoHostFilters := strings.Split(os.Getenv("LEGO_HOST_FILTERS"), ",")
+	for _, rawfilter := range legoHostFilters {
+		filter := strings.TrimSpace(rawfilter)
+		if filter == "" {
+			continue
+		}
+
+		r, err := regexp.Compile(filter)
+		if err != nil {
+			kl.Log().Warnf("could not compile regexp %s, ignoring", filter)
+			continue
+		}
+
+		kl.legoHostFilters = append(kl.legoHostFilters, r)
+	}
 }
 
 // read config parameters from ENV vars
@@ -466,6 +488,7 @@ func (kl *KubeLego) paramsLego() error {
 		}
 		kl.exponentialBackoffMultiplier = f
 	}
+	kl.parseHostFilters()
 
 	return nil
 }

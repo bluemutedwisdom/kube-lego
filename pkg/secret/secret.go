@@ -4,9 +4,10 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
+	"regexp"
 	"time"
 
-	"github.com/jetstack/kube-lego/pkg/kubelego_const"
+	"github.com/Shopify/kube-lego/pkg/kubelego_const"
 
 	"github.com/Sirupsen/logrus"
 	k8sErrors "k8s.io/apimachinery/pkg/api/errors"
@@ -115,9 +116,13 @@ func (o *Secret) TlsDomainsInclude(domains []string) bool {
 		tlsDomainsMap[domain] = true
 	}
 
+	re := regexp.MustCompile("^[\\p{L}\\d_\\-]+\\.")
 	for _, domain := range domains {
 		if val, ok := tlsDomainsMap[domain]; !ok || !val {
-			return false
+			domainWildcardPattern := re.ReplaceAllString(domain, "*.$2")
+			if val, ok := tlsDomainsMap[domainWildcardPattern]; !ok || !val {
+				return false
+			}
 		}
 	}
 

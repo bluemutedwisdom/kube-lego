@@ -1,6 +1,7 @@
 package ingress
 
 import (
+	"regexp"
 	"testing"
 
 	"github.com/golang/mock/gomock"
@@ -10,6 +11,52 @@ import (
 	kubelego "github.com/jetstack/kube-lego/pkg/kubelego_const"
 	"github.com/jetstack/kube-lego/pkg/mocks"
 )
+
+func TestFilterTlsHosts(t *testing.T) {
+	ctrlMock := gomock.NewController(t)
+	defer ctrlMock.Finish()
+
+	ing := &Ingress{
+		IngressApi: &k8sExtensions.Ingress{
+			Spec: k8sExtensions.IngressSpec{
+				TLS: []k8sExtensions.IngressTLS{
+					k8sExtensions.IngressTLS{
+						Hosts:      []string{"domain1", "sub.custom-domain.ca"},
+						SecretName: "secret1",
+					},
+					k8sExtensions.IngressTLS{
+						Hosts:      []string{"*.domain.com"},
+						SecretName: "secret2",
+					},
+				},
+			},
+		},
+	}
+	ing.kubelego = mocks.DummyKubeLego(ctrlMock)
+
+	assert.Equal(t, []string{"domain1", "sub.custom-domain.ca"}, ing.Tls()[0].Hosts())
+	assert.Equal(t, []string{"*.domain.com"}, ing.Tls()[1].Hosts())
+
+	filters := []*regexp.Regexp{}
+
+	ing.FilterTlsHosts(filters)
+	assert.Equal(t, []string{"domain1", "sub.custom-domain.ca"}, ing.Tls()[0].Hosts())
+	assert.Equal(t, []string{"*.domain.com"}, ing.Tls()[1].Hosts())
+
+	subDomainsFilter, err := regexp.Compile(".*\\.custom-domain\\.ca$")
+	assert.Nil(t, err)
+	filters = append(filters, subDomainsFilter)
+	ing.FilterTlsHosts(filters)
+	assert.Equal(t, []string{"domain1"}, ing.Tls()[0].Hosts())
+	assert.Equal(t, []string{"*.domain.com"}, ing.Tls()[1].Hosts())
+
+	wildcardDomainsFilter, err := regexp.Compile("^\\*\\..*")
+	assert.Nil(t, err)
+	filters = append(filters, wildcardDomainsFilter)
+	ing.FilterTlsHosts(filters)
+	assert.Equal(t, []string{"domain1"}, ing.Tls()[0].Hosts())
+	assert.Equal(t, []string{}, ing.Tls()[1].Hosts())
+}
 
 func TestIsSupportedIngressClass(t *testing.T) {
 	supportedClass := []string{"nginx", "gce", "custom"}

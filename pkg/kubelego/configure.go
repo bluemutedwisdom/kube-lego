@@ -1,11 +1,13 @@
 package kubelego
 
 import (
-	"github.com/jetstack/kube-lego/pkg/ingress"
-	"github.com/jetstack/kube-lego/pkg/kubelego_const"
-
 	"fmt"
 	"strings"
+
+	"github.com/Shopify/kube-lego/pkg/ingress"
+	"github.com/Shopify/kube-lego/pkg/kubelego_const"
+
+	"github.com/Sirupsen/logrus"
 )
 
 func (kl *KubeLego) TlsIgnoreDuplicatedSecrets(tlsSlice []kubelego.Tls) []kubelego.Tls {
@@ -66,7 +68,10 @@ func (kl *KubeLego) processProvider(ings []kubelego.Ingress) (err error) {
 			if providerName == ing.IngressProvider() {
 				err = provider.Process(ing)
 				if err != nil {
-					provider.Log().Error(err)
+					provider.Log().WithFields(logrus.Fields{
+						"namespace": ing.Object().Namespace,
+						"ingress":   ing.Object().Name,
+					}).Error(err)
 				}
 			}
 		}
@@ -79,7 +84,7 @@ func (kl *KubeLego) processProvider(ings []kubelego.Ingress) (err error) {
 	return nil
 }
 
-func (kl *KubeLego) reconfigure(ingressesAll []kubelego.Ingress) error {
+func (kl *KubeLego) reconfigure(ingressesAll []kubelego.Ingress) []error {
 	tlsSlice := []kubelego.Tls{}
 	ingresses := []kubelego.Ingress{}
 
@@ -88,6 +93,7 @@ func (kl *KubeLego) reconfigure(ingressesAll []kubelego.Ingress) error {
 		if ing.Ignore() {
 			continue
 		}
+		ing.FilterTlsHosts(kl.LegoHostFilters())
 		tlsSlice = append(tlsSlice, ing.Tls()...)
 		ingresses = append(ingresses, ing)
 	}
@@ -100,7 +106,16 @@ func (kl *KubeLego) reconfigure(ingressesAll []kubelego.Ingress) error {
 
 	// process certificate validity
 	kl.Log().Info("process certificate requests for ingresses")
-	errs := kl.TlsProcessHosts(tlsSlice)
+	return kl.TlsProcessHosts(tlsSlice)
+}
+
+func (kl *KubeLego) Reconfigure(namespace string) error {
+	ingresses, err := ingress.All(kl, namespace)
+	if err != nil {
+		return err
+	}
+
+	errs := kl.reconfigure(ingresses)
 	if len(errs) > 0 {
 		errsStr := []string{}
 		for _, err := range errs {
@@ -109,19 +124,10 @@ func (kl *KubeLego) reconfigure(ingressesAll []kubelego.Ingress) error {
 		kl.Log().Error("Error while processing certificate requests: ", strings.Join(errsStr, ", "))
 
 		// request a rerun of reconfigure
-		kl.workQueue.Add(true)
+		kl.workQueue.Add(namespace)
 	}
 
 	return nil
-}
-
-func (kl *KubeLego) Reconfigure() error {
-	ingressesAll, err := ingress.All(kl)
-	if err != nil {
-		return err
-	}
-
-	return kl.reconfigure(ingressesAll)
 }
 
 func (kl *KubeLego) TlsProcessHosts(tlsSlice []kubelego.Tls) []error {

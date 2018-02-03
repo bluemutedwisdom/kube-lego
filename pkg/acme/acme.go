@@ -8,8 +8,8 @@ import (
 	"path"
 	"strings"
 
-	"github.com/jetstack/kube-lego/pkg/kubelego_const"
-	"github.com/jetstack/kube-lego/pkg/utils"
+	"github.com/Shopify/kube-lego/pkg/kubelego_const"
+	"github.com/Shopify/kube-lego/pkg/utils"
 
 	"github.com/Sirupsen/logrus"
 )
@@ -52,6 +52,10 @@ func (a *Acme) Mux() *http.ServeMux {
 	})
 
 	mux.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
+		a.Log().WithFields(logrus.Fields{
+			"path":       r.URL.Path,
+			"user-agent": r.UserAgent(),
+		}).Debug("kube-lego pod, general endpoint received a web request")
 		w.Header().Set("Content-Type", "text/plain")
 		w.WriteHeader(http.StatusOK)
 		fmt.Fprint(w, "ok")

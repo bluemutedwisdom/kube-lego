@@ -4,8 +4,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/jetstack/kube-lego/pkg/kubelego_const"
-	"github.com/jetstack/kube-lego/pkg/service"
+	"github.com/Shopify/kube-lego/pkg/kubelego_const"
+	"github.com/Shopify/kube-lego/pkg/service"
 
 	"github.com/Sirupsen/logrus"
 	k8sExtensions "k8s.io/client-go/pkg/apis/extensions/v1beta1"
@@ -115,6 +115,11 @@ func (p *Gce) Process(ingObj kubelego.Ingress) (err error) {
 			pathsNew = []k8sExtensions.HTTPIngressPath{
 				p.getHTTPIngressPath(),
 			}
+		}
+
+		if rule.HTTP == nil {
+			p.Log().WithField("host", rule.Host).Debug("rule does not have http configured, ignoring")
+			continue
 		}
 
 		// remove existing challenge paths

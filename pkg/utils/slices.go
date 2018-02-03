@@ -4,6 +4,7 @@ import (
 	"crypto/md5"
 	"fmt"
 	"io"
+	"regexp"
 	"sort"
 	"strings"
 )
@@ -39,4 +40,14 @@ func HashStringSlice(in []string) string {
 	}
 
 	return fmt.Sprintf("%x", h.Sum(nil))
+}
+
+func RegexpSliceMatchString(filters []*regexp.Regexp, s string) *regexp.Regexp {
+	for _, filter := range filters {
+		if filter.MatchString(s) {
+			return filter
+		}
+	}
+
+	return nil
 }

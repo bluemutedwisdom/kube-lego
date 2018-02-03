@@ -12,11 +12,14 @@ import (
 	"net/http"
 	"net/url"
 	"sync"
+	"time"
 
+	"github.com/Shopify/kube-lego/pkg/kubelego_const"
 	"github.com/cenk/backoff"
-	"github.com/jetstack/kube-lego/pkg/kubelego_const"
 	"golang.org/x/crypto/acme"
 	"golang.org/x/net/context"
+
+	"github.com/Sirupsen/logrus"
 )
 
 func (a *Acme) ensureAcmeClient() error {
@@ -24,6 +27,7 @@ func (a *Acme) ensureAcmeClient() error {
 	// get existing user or create new one
 	client, accountURI, err := a.getUser()
 	if err != nil {
+		a.Log().Warnf("error while getting existing user: %s. Creating a new one", err)
 		client, account, err := a.createUser()
 		if err != nil {
 			return err
@@ -35,7 +39,8 @@ func (a *Acme) ensureAcmeClient() error {
 
 	account, err := a.validateUser(client, accountURI)
 	if err != nil {
-		a.Log().Fatalf("fatal error verifying existing user: %s", err)
+		a.Log().Errorf("fatal error verifying existing user: %s", err)
+		return err
 	}
 	a.acmeAccount = account
 	a.acmeClient = client
@@ -132,7 +137,7 @@ func (a *Acme) ObtainCertificate(domains []string) (data map[string][]byte, err 
 			op := func() error {
 				auth, err := a.verifyDomain(domain)
 				if err != nil {
-					log.Debugf("error while authorizing: %s", err)
+					log.Warnf("error while authorizing: %s", err)
 					return err
 				}
 				log.Debugf("got authorization: %+v", auth)
@@ -170,14 +175,14 @@ func (a *Acme) ObtainCertificate(domains []string) (data map[string][]byte, err 
 		}
 	}
 
-	if len(successfulDomains) == 0 {
-		return data, fmt.Errorf("no domain could be authorized successfully")
-	}
-
 	if len(failedDomains) > 0 {
 		a.Log().WithField("failed_domains", failedDomains).Warnf("authorization failed for some domains")
 	}
 	// TODO: Mark failed domains as failed in ingress
+
+	if len(successfulDomains) == 0 {
+		return data, fmt.Errorf("no domain could be authorized successfully")
+	}
 
 	domains = successfulDomains
 
@@ -216,8 +221,12 @@ func (a *Acme) ObtainCertificate(domains []string) (data map[string][]byte, err 
 		pem.Encode(certBuffer, &pem.Block{Type: "CERTIFICATE", Bytes: cert})
 	}
 
-	a.Log().Infof("successfully got certificate: domains=%+v url=%s", domains, certUrl)
-	a.Log().Debugf("certificate pem data:\n%s", certBuffer.String())
+	logger := a.Log().WithFields(logrus.Fields{
+		"domains":  domains,
+		"cert_url": certUrl,
+	})
+	logger.Info("successfully got certificate")
+	logger.Debugf("certificate pem data:\n%s", certBuffer.String())
 
 	data = map[string][]byte{
 		kubelego.TLSCertKey:       certBuffer.Bytes(),

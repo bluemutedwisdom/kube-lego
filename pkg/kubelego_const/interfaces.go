@@ -2,6 +2,7 @@ package kubelego
 
 import (
 	"net"
+	"regexp"
 	"time"
 
 	"github.com/Sirupsen/logrus"
@@ -34,6 +35,7 @@ type KubeLego interface {
 	ExponentialBackoffMultiplier() float64
 	LegoPodIP() net.IP
 	LegoRsaKeySize() int
+	LegoHostFilters() []*regexp.Regexp
 	IngressProvider(string) (IngressProvider, error)
 	Version() string
 	AcmeUser() (map[string][]byte, error)
@@ -79,6 +81,7 @@ type Ingress interface {
 	IngressProvider() string
 	Tls() []Tls
 	Ignore() bool
+	FilterTlsHosts([]*regexp.Regexp)
 }
 
 type IngressProvider interface {

@@ -2,9 +2,11 @@ package ingress
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 
 	kubelego "github.com/jetstack/kube-lego/pkg/kubelego_const"
+	"github.com/jetstack/kube-lego/pkg/utils"
 
 	"github.com/Sirupsen/logrus"
 	k8sErrors "k8s.io/apimachinery/pkg/api/errors"
@@ -76,8 +78,8 @@ func New(client kubelego.KubeLego, namespace string, name string) *Ingress {
 	return ingress
 }
 
-func All(client kubelego.KubeLego) (ingresses []kubelego.Ingress, err error) {
-	ingSlice, err := client.KubeClient().Extensions().Ingresses(client.LegoWatchNamespace()).List(k8sMeta.ListOptions{})
+func All(client kubelego.KubeLego, namespace string) (ingresses []kubelego.Ingress, err error) {
+	ingSlice, err := client.KubeClient().Extensions().Ingresses(namespace).List(k8sMeta.ListOptions{})
 
 	if err != nil {
 		return
@@ -203,6 +205,28 @@ func (i *Ingress) Ignore() bool {
 
 func (i *Ingress) KubeLego() kubelego.KubeLego {
 	return i.kubelego
+}
+
+func (i *Ingress) FilterTlsHosts(filters []*regexp.Regexp) {
+	if len(filters) == 0 {
+		i.Log().Debugf("no filter given, doing nothing")
+		return
+	}
+
+	for count, _ := range i.IngressApi.Spec.TLS {
+		hosts := []string{}
+		tls := &i.IngressApi.Spec.TLS[count]
+
+		for _, host := range tls.Hosts {
+			if filter := utils.RegexpSliceMatchString(filters, host); filter != nil {
+				i.Log().Debugf("host %s is ignored because it matches host filter %s", host, filter.String())
+				continue
+			}
+			hosts = append(hosts, host)
+		}
+
+		tls.Hosts = hosts
+	}
 }
 
 func (i *Ingress) Tls() (out []kubelego.Tls) {

@@ -66,6 +66,63 @@ KOqkqm57TH2H3eDJAkSnh6/DNFu0Qg==
 -----END CERTIFICATE-----
 `
 
+var wildCardCertPem = `
+-----BEGIN CERTIFICATE-----
+MIIFXTCCBEWgAwIBAgIQDQGqEpVQGrXmIQdVPGqHDjANBgkqhkiG9w0BAQsFADBw
+MQswCQYDVQQGEwJVUzEVMBMGA1UEChMMRGlnaUNlcnQgSW5jMRkwFwYDVQQLExB3
+d3cuZGlnaWNlcnQuY29tMS8wLQYDVQQDEyZEaWdpQ2VydCBTSEEyIEhpZ2ggQXNz
+dXJhbmNlIFNlcnZlciBDQTAeFw0xNjExMDcwMDAwMDBaFw0xOTExMTIxMjAwMDBa
+MGQxCzAJBgNVBAYTAkNBMRAwDgYDVQQIEwdPbnRhcmlvMQ8wDQYDVQQHEwZPdHRh
+d2ExFTATBgNVBAoTDFNob3BpZnkgSW5jLjEbMBkGA1UEAwwSKi5zaG9waWZ5Y2xv
+dWQuY29tMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAldK+ujGruJT0
+qJ0tDoN26/KNJcQbbdFI+yiyyAZNI5Vd/NBUDCNVYeZ9SnwfkggDSdD9V07y4W5l
+c/d0b4uqr1OwabxNYqE3Phi97UhHd1eFxpO/zDdxt3hzQMitJkVYITv5aITFzlRh
+apOxoDcC0mdsOG0MetRAUpH6j+WBOgTIS9SWocCdnrBRYsCPGUZm3zcOwCNYGf9u
+fkBknH3vQ7+9aic8s5wPmT/ltGvIL7SyuSOPEdU7DvpR04XwTOwWH27zy+R7m7QI
+B0Sz9Q0RB6XV3Cwc9MAc5sfl7p+0oi9GJ1uK/3/vLR/yUn8c6htLUn7avh1yPorq
+iHofgBHkEwIDAQABo4IB/TCCAfkwHwYDVR0jBBgwFoAUUWj/kK8CB3U8zNllZGKi
+ErhZcjswHQYDVR0OBBYEFMlOrAal/Ws+poR5IbVDwOxdQf/vMC8GA1UdEQQoMCaC
+Eiouc2hvcGlmeWNsb3VkLmNvbYIQc2hvcGlmeWNsb3VkLmNvbTAOBgNVHQ8BAf8E
+BAMCBaAwHQYDVR0lBBYwFAYIKwYBBQUHAwEGCCsGAQUFBwMCMHUGA1UdHwRuMGww
+NKAyoDCGLmh0dHA6Ly9jcmwzLmRpZ2ljZXJ0LmNvbS9zaGEyLWhhLXNlcnZlci1n
+NS5jcmwwNKAyoDCGLmh0dHA6Ly9jcmw0LmRpZ2ljZXJ0LmNvbS9zaGEyLWhhLXNl
+cnZlci1nNS5jcmwwTAYDVR0gBEUwQzA3BglghkgBhv1sAQEwKjAoBggrBgEFBQcC
+ARYcaHR0cHM6Ly93d3cuZGlnaWNlcnQuY29tL0NQUzAIBgZngQwBAgIwgYMGCCsG
+AQUFBwEBBHcwdTAkBggrBgEFBQcwAYYYaHR0cDovL29jc3AuZGlnaWNlcnQuY29t
+ME0GCCsGAQUFBzAChkFodHRwOi8vY2FjZXJ0cy5kaWdpY2VydC5jb20vRGlnaUNl
+cnRTSEEySGlnaEFzc3VyYW5jZVNlcnZlckNBLmNydDAMBgNVHRMBAf8EAjAAMA0G
+CSqGSIb3DQEBCwUAA4IBAQCjwDEEKBBa1jK7nICRvAznq4vdKHTTzDUkcIuetFuX
+4CxnNwTJGLLoG1yLQ6tznOh6I3AhN0N8mtRFca+NVoQDY1vt9woST/zZbo0PfqtO
+gKmLTFWVGC9DkI/We9BU6rXx0lB6Brv2InJ2f2sAZ7vDUMGkNfK6ee7VcTyb8oHV
+ulicnKoEquUlICEGy0wnB40XAFpesxz1Not+Nh7NGThqujZXt+mQGTVSEmB95vgW
+k6S7BZQOsUjH2kyEI59BmA7SzuZsxuSgJFCwU3oBqtJbqKfqtfqEggPYEoz6CoIv
+V6Apr44AQ682E2hcddtkoQZ/7Rrj+XHJIXuTyITejx/U
+-----END CERTIFICATE-----`
+
+func TestSecret_TlsDomainsInclude(t *testing.T) {
+	s := &Secret{
+		SecretApi: &api.Secret{
+			Data: map[string][]byte{
+				api.TLSCertKey: []byte(wildCardCertPem),
+			},
+		},
+	}
+
+	domains, err := s.TlsDomains()
+	assert.Nil(t, err)
+	assert.EqualValues(
+		t,
+		[]string{"*.shopifycloud.com", "shopifycloud.com"},
+		domains,
+	)
+
+	assert.True(t, s.TlsDomainsInclude([]string{"shopifycloud.com", "www.shopifycloud.com", "random-subdomain.shopifycloud.com", "my_app.shopifycloud.com"}))
+	assert.True(t, s.TlsDomainsInclude([]string{"əşii.shopifycloud.com"}))
+	assert.False(t, s.TlsDomainsInclude([]string{"sub.sub.shopifycloud.com"}))
+	assert.False(t, s.TlsDomainsInclude([]string{"shopifycloud.com", "anotherdomain.com"}))
+	assert.False(t, s.TlsDomainsInclude([]string{"incorrect,subdomain.shopifycloud.com"}))
+}
+
 func TestSecret_TlsDomains(t *testing.T) {
 	s := &Secret{
 		SecretApi: &api.Secret{

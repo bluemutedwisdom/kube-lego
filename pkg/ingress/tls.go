@@ -6,9 +6,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/jetstack/kube-lego/pkg/kubelego_const"
-	"github.com/jetstack/kube-lego/pkg/secret"
-	"github.com/jetstack/kube-lego/pkg/utils"
+	"github.com/Shopify/kube-lego/pkg/kubelego_const"
+	"github.com/Shopify/kube-lego/pkg/secret"
+	"github.com/Shopify/kube-lego/pkg/utils"
 
 	"github.com/Sirupsen/logrus"
 	k8sApi "k8s.io/client-go/pkg/api/v1"
@@ -21,17 +21,6 @@ type Tls struct {
 	*k8sExtensions.IngressTLS
 	ingress kubelego.Ingress
 	secret  kubelego.Secret
-}
-
-func (t *Tls) Validate() error {
-	if len(t.Hosts()) == 0 {
-		return fmt.Errorf("No hosts specified")
-	}
-
-	if t.SecretName == "" {
-		return fmt.Errorf("No secret name specified")
-	}
-	return nil
 }
 
 func (t Tls) SecretMetadata() (meta *k8sApi.ObjectMeta) {
@@ -72,25 +61,32 @@ func (i *Tls) newCertNeeded() bool {
 	}
 
 	tlsSecret := i.Secret()
+	logger := i.Log().WithFields(logrus.Fields{
+		"secret_name": tlsSecret.Object().Name,
+		"domains":     i.Hosts(),
+	})
+
 	if !tlsSecret.Exists() {
 		i.Log().Info("no cert associated with ingress")
 		return true
 	}
 
 	if !tlsSecret.TlsDomainsInclude(i.Hosts()) {
-		i.Log().WithField("domains", i.Hosts()).Info("cert does not cover all domains")
+		logger.Info("cert does not cover all domains")
 		return true
 	}
 
 	expireTime, err := tlsSecret.TlsExpireTime()
 	if err != nil {
-		i.Log().Warn("error while reading expiry time: ", err)
+		logger.Warn("error while reading expiry time: ", err)
 		return true
 	}
-
 	minimumValidity := i.ingress.KubeLego().LegoMinimumValidity()
+	logger = logger.WithFields(logrus.Fields{
+		"expire_time":      expireTime.String(),
+		"minimum_validity": minimumValidity.String(),
+	})
 	timeLeft := expireTime.Sub(time.Now())
-	logger := i.Log().WithField("expire_time", expireTime)
 	if timeLeft < minimumValidity {
 		logger.Infof("cert expires soon so renew")
 		return true
@@ -104,11 +100,16 @@ func (i *Tls) newCertNeeded() bool {
 func (i *Tls) Process() error {
 
 	if !i.newCertNeeded() {
-		i.Log().Infof("no cert request needed")
+		i.Log().Debug("no cert request needed")
 		return nil
 	}
 
-	return i.RequestCert()
+	err := i.RequestCert()
+	if err != nil {
+		i.Log().Error("failed to request certificate", err)
+	}
+
+	return err
 }
 
 func (i *Tls) RequestCert() error {

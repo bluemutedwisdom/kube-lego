@@ -1,4 +1,4 @@
-ACCOUNT=jetstack
+ACCOUNT=Shopify
 APP_NAME=kube-lego
 
 PACKAGE_NAME=github.com/${ACCOUNT}/${APP_NAME}
@@ -7,7 +7,7 @@ GO_VERSION=1.9.2
 GOOS := linux
 GOARCH := amd64
 
-DOCKER_IMAGE=${ACCOUNT}/${APP_NAME}
+DOCKER_IMAGE=gcr.io/shopify-docker-images/cloud/kube-lego
 
 BUILD_DIR=_build
 TEST_DIR=_test
@@ -15,7 +15,7 @@ TEST_DIR=_test
 CONTAINER_DIR=/go/src/${PACKAGE_NAME}
 
 BUILD_TAG := build
-IMAGE_TAGS := canary
+IMAGE_TAGS := $(TAG)
 
 PACKAGES=$(shell find . -name "*_test.go" | xargs -n1 dirname | grep -v 'vendor/' | sort -u | xargs -n1 printf "%s.test_pkg ")
 
@@ -25,7 +25,7 @@ all: test build
 
 codegen:
 	which mockgen
-	mockgen -imports .=github.com/jetstack/kube-lego/pkg/kubelego_const -package=mocks -source=pkg/kubelego_const/interfaces.go > pkg/mocks/mocks.go
+	mockgen -imports .=github.com/Shopify/kube-lego/pkg/kubelego_const -package=mocks -source=pkg/kubelego_const/interfaces.go > pkg/mocks/mocks.go
 
 depend:
 	rm -rf $(TEST_DIR)/
@@ -73,7 +73,7 @@ docker_%:
 		golang:${GO_VERSION} \
 		/bin/bash -c "tar xf - && make $*" \
 	))
-	
+
 	# run build inside container
 	tar cf - . | docker start -a -i $(CONTAINER_ID)
 
@@ -87,12 +87,12 @@ docker_%:
 
 image: docker_all version
 	docker build --build-arg VCS_REF=$(GIT_COMMIT) -t $(DOCKER_IMAGE):$(BUILD_TAG) .
-	
+
 push: image
 	set -e; \
 	for tag in $(IMAGE_TAGS); do \
-		docker tag  $(DOCKER_IMAGE):$(BUILD_TAG) $(DOCKER_IMAGE):$${tag} ; \
-		docker push $(DOCKER_IMAGE):$${tag}; \
+		docker tag  $(DOCKER_IMAGE):$(BUILD_TAG) $${tag} ; \
+		docker push $${tag}; \
 	done
 
 release:
